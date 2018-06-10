@@ -1,0 +1,145 @@
+-- DELETA A BASE DE DADOS GOIANESIA
+DROP SCHEMA GOIANESIA;
+
+-- CRIA A BASE DE DADOS GOIANESIA
+CREATE SCHEMA GOIANESIA;
+
+-- SELECIONA A BASE DE DADOS GOIANESIA PARA USO
+USE GOIANESIA;
+
+-- CRIA A TABELA USUARIO NA BASE GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS DADOS DOS USUÁRIOS QUE PODERÃO FAZER USO DO SISTEMA
+CREATE TABLE GOIANESIA.USUARIO(
+	matriculaUsuario VARCHAR(10) NOT NULL,
+    nomeUsuario VARCHAR(80) NOT NULL,
+    telefoneUsuario VARCHAR(16) NOT NULL,
+    login VARCHAR(15) UNIQUE NOT NULL,
+    senha VARCHAR(15) NOT NULL,
+    PRIMARY KEY(matriculaUsuario)
+);
+
+-- CRIA A TABELA FUNCIONARIO NA BASE GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS DADOS DOS COBRADORES E MOTORISTAS DA EMPRESA
+CREATE TABLE GOIANESIA.FUNCIONARIO(
+	matriculaFuncionario VARCHAR(10) NOT NULL,
+    nomeFuncionario VARCHAR(80) NOT NULL,
+    telefoneFuncionario VARCHAR(16) NOT NULL,
+    cargoFuncionario VARCHAR(1) NOT NULL,
+    PRIMARY KEY(matriculaFuncionario)
+);
+
+-- CRIA A TABELA LINHAS NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS DADOS DAS LINHAS
+CREATE TABLE GOIANESIA.LINHAS(
+	cod_linha INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	prefixoLinha VARCHAR(30) NOT NULL,
+    itinerarioLinha VARCHAR(100) NOT NULL,
+    PRIMARY KEY(cod_linha)
+);
+
+-- CRIA A TABELA HORARIOS NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS DADOS DOS HORÁRIOS
+CREATE TABLE GOIANESIA.HORARIOS(
+	cod_horario INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	horario VARCHAR(5) NOT NULL,
+	PRIMARY KEY(cod_horario)
+);
+
+-- CRIA A TABELA SERIED1 NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS REGISTROS DE VENDAS DO TALÃO SÉRIE D1
+CREATE TABLE SERIED1(
+	cod_registro INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    iniciantePassagem INT UNSIGNED UNIQUE NOT NULL,
+    encerrantePassagem INT UNSIGNED UNIQUE NOT NULL,
+    valorRegistro NUMERIC(10,2),
+    PRIMARY KEY(cod_registro)
+);
+
+-- CRIA A TABELA SERIED9 NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS REGISTROS DE VENDAS DO TALÃO SÉRIE D9
+CREATE TABLE SERIED9(
+	cod_registro INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    iniciantePassagem INT UNSIGNED UNIQUE NOT NULL,
+    encerrantePassagem INT UNSIGNED UNIQUE NOT NULL,
+    valorRegistro NUMERIC(10,2),
+    PRIMARY KEY(cod_registro)
+);
+
+-- CRIA A TABELA FRETE NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS REGISTROS DE FRETES DE CADA VIAGEM
+CREATE TABLE FRETE(
+	codFrete INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    inicianteFrete INT UNSIGNED UNIQUE NOT NULL,
+    encerranteFrete INT UNSIGNED UNIQUE NOT NULL,
+    valorFrete NUMERIC(10,2) NOT NULL,
+    PRIMARY KEY(codFrete)
+);
+
+-- CRIA A TABELA BDI NA BASE DE DADOS GOIANESIA
+-- ESSA TABELA ARMAZENARÁ OS DADOS DO BDI
+CREATE TABLE BDI(
+	codBDI VARCHAR(20) NOT NULL,
+    dataBDI VARCHAR(20) NOT NULL,
+    cod_horario INT UNSIGNED NOT NULL,			-- FK
+    cod_linha INT UNSIGNED NOT NULL, 			-- FK
+    matriculaCobradorBDI VARCHAR(10) NOT NULL, 	-- FK
+    matriculaMotoristaBDI VARCHAR(10) NOT NULL,	-- FK
+	codRegistroD1 INT UNSIGNED NOT NULL, 		-- FK
+	codRegistroD9 INT UNSIGNED NOT NULL,		-- FK
+	codFrete INT UNSIGNED NOT NULL,				-- FK
+    
+    INDEX indice_horario_bdi(cod_horario),
+    CONSTRAINT fk_cod_horario
+		FOREIGN KEY(cod_horario)
+        REFERENCES GOIANESIA.HORARIOS(cod_horario),
+    
+	INDEX indice_cod_registro_d1(codRegistroD1),
+	CONSTRAINT fk_cod_registro_d1
+		FOREIGN KEY(codRegistroD1)
+		REFERENCES GOIANESIA.SERIED1(cod_registro),
+        
+	 INDEX indice_cod_registro_d9(codRegistroD9),
+     CONSTRAINT fk_cod_registro_d9
+		 FOREIGN KEY(codRegistroD9)
+         REFERENCES GOIANESIA.SERIED9(cod_registro),
+        
+	 INDEX indice_cod_do_frete(codFrete),
+	 CONSTRAINT fk_cod_do_frete
+		 FOREIGN KEY(codFrete)
+         REFERENCES GOIANESIA.FRETE(codFrete),
+    
+    INDEX indice_prefixo_da_linha(cod_linha),
+    CONSTRAINT fk_prefixo_da_linha
+		FOREIGN KEY(cod_linha)
+        REFERENCES GOIANESIA.LINHAS(cod_linha),
+        
+	INDEX indice_cobrador(matriculaCobradorBDI),
+    CONSTRAINT fk_cobrador
+		FOREIGN KEY(matriculaCobradorBDI)
+        REFERENCES GOIANESIA.FUNCIONARIO(matriculaFuncionario),
+        
+	INDEX indice_motorista(matriculaMotoristaBDI),
+    CONSTRAINT fk_motorista
+		FOREIGN KEY(matriculaMotoristaBDI)
+        REFERENCES GOIANESIA.FUNCIONARIO(matriculaFuncionario),
+    
+    PRIMARY KEY(codBDI)
+);
+
+CREATE TABLE HORARIOS_POR_LINHA(
+	cod_linha INT UNSIGNED NOT NULL,
+    cod_horario INT UNSIGNED NOT NULL,
+    PRIMARY KEY(cod_horario, cod_linha),
+    
+    INDEX indice_horarios_por_linha(cod_horario),
+    CONSTRAINT fk_horarios_por_linha
+		FOREIGN KEY(cod_horario)
+        REFERENCES GOIANESIA.HORARIOS(cod_horario),
+    
+	INDEX indice_linhas_por_horarios(cod_linha),
+    CONSTRAINT fk_linhas_por_horarios
+		FOREIGN KEY(cod_linha)
+        REFERENCES GOIANESIA.LINHAS(cod_linha)
+    
+);
+
